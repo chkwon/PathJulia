@@ -8,7 +8,8 @@ PATHLIB = $(PATHDIR)/lib
 XLIBS = -lgfortran
 
 CC    = gcc
-OSX_CFLAGS = -I$(PATHDIR)/include -m64 -dynamiclib -shared -fPIC -install_name @rpath/libpath47julia.dylib
+# OSX_CFLAGS = -I$(PATHDIR)/include -m64 -dynamiclib -shared -fPIC -install_name @rpath/libpath47julia.dylib
+OSX_CFLAGS = -I$(PATHDIR)/include -m64 -dynamiclib -shared -fPIC 
 LINUX64_CFLAGS = -I$(PATHDIR)/include -m64 -shared -fPIC -Wl,-rpath,'libpath47julia.so'
 LINUX43_CFLAGS = -I$(PATHDIR)/include -m43 -shared -fPIC -Wl,-rpath,'libpath47julia.so'
 
