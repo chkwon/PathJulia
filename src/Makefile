@@ -30,4 +30,4 @@ linux32: pathjulia.c Standalone_Path.c
 	mv libpath47julia.so ../lib/linu32/
 
 test: test_pathjulia.c
-	$(CC) -I$(PATHDIR)/include -Wl,-rpath,. -m64 -o test_pathjulia $^ -L./ -lpath47julia -lm
+	$(CC) -I$(PATHDIR)/include -Wl,-rpath,../lib/linux64/ -m64 -o test_pathjulia $^ -L../lib/linux64/ -lpath47julia -lm
