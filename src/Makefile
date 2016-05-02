@@ -28,3 +28,8 @@ linux32: pathjulia.c Standalone_Path.c
 	$(CC) $(LINUX32_CFLAGS) -o libpath47julia.so $^ $(PATHLIB)/linux32/libpath47.a -lm
 	mkdir -p ../lib/linux32
 	mv libpath47julia.so ../lib/linu32/
+
+win64: pathjulia.c Standalone_Path.c
+	$(CC) $(LINUX64_CFLAGS) -o libpath47julia.dll $^ $(PATHLIB)/win64/path47_static.lib $(PATHLIB)/win64/path47.dll -lm
+	if not exist "../lib/win64" md "../lib/win64"
+	move /Y libpath47julia.dll ../lib/win64/
