@@ -14,6 +14,7 @@
 #include <math.h>
 #include "Standalone_Path.h"
 #include "Types.h"
+#include "pathjulia.h"
 
 static int fill_structure;      /* Do we need to fill in the structure of    */
                                 /* the Jacobian?                             */

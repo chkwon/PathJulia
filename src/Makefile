@@ -20,11 +20,14 @@ osx: pathjulia.c Standalone_Path.c
 	mv libpath47julia.dylib ../lib/osx/
 
 linux64: pathjulia.c Standalone_Path.c
-	$(CC) $(LINUX64_CFLAGS) -o libpath47julia.so $^ $(PATHLIB)/linux64/libpath47.a -lm
-	mkdir -p ../lib/linux64
-	mv libpath47julia.so ../lib/linux64/
+	$(CC) $(LINUX64_CFLAGS) -Wl,-soname,libpath47julia.so -o libpath47julia.so $^ $(PATHLIB)/linux64/libpath47.a -lm
+	# mkdir -p ../lib/linux64
+	# mv libpath47julia.so ../lib/linux64/
 
 linux32: pathjulia.c Standalone_Path.c
 	$(CC) $(LINUX32_CFLAGS) -o libpath47julia.so $^ $(PATHLIB)/linux32/libpath47.a -lm
 	mkdir -p ../lib/linux32
 	mv libpath47julia.so ../lib/linu32/
+
+test: test_pathjulia.c
+	$(CC) -I$(PATHDIR)/include -Wl,-rpath,. -m64 -o test_pathjulia $^ -L./ -lpath47julia -lm
