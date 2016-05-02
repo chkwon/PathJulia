@@ -3,7 +3,7 @@
 // This modification enables a user provide function pointers to
 // both funcEval and jacEval.
 // The main purpose is to provide those function from Julia.
-
+// See https://github.com/chkwon/PATHSolver.jl
 // Changhyun Kwon https://github.com/chkwon/
 
 
