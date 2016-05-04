@@ -15,13 +15,8 @@ CCwin32 = gcc32
 OSX_CFLAGS = -I$(PATHDIR)/include -m64 -dynamiclib -shared -fPIC
 LINUX64_CFLAGS = -I$(PATHDIR)/include -m64 -shared -fPIC -Wl,-soname,libpath47julia.so
 LINUX32_CFLAGS = -I$(PATHDIR)/include -m32 -shared -fPIC -Wl,-soname,libpath47julia.so
-<<<<<<< HEAD
-WIN64_CFLAGS = -m64 -DFNAME_LCASE_NODECOR -I$(PATHDIR)/include -DUSE_OUTPUT_INTERFACE -shared
-WIN32_CFLAGS = -m32 -DFNAME_LCASE_NODECOR -I$(PATHDIR)/include -DUSE_OUTPUT_INTERFACE -shared
-=======
 WIN64_CFLAGS = -m64 -DFNAME_LCASE_NODECOR -I$(PATHDIR)/include -DUSE_OUTPUT_INTERFACE -shared 
 WIN32_CFLAGS = -m32 -DFNAME_LCASE_NODECOR -I$(PATHDIR)/include -DUSE_OUTPUT_INTERFACE -shared 
->>>>>>> master
 
 osx: pathjulia.c Standalone_Path.c
 	$(CC) $(OSX_CFLAGS) -o libpath47julia.dylib $^ $(PATHLIB)/osx/libpath47.a -lm
@@ -37,6 +32,8 @@ linux32: pathjulia.c Standalone_Path.c
 	$(CC) $(LINUX32_CFLAGS) -o libpath47julia.so $^ $(PATHLIB)/linux32/libpath47.a -lm
 	mkdir -p ../lib/linux32
 	mv libpath47julia.so ../lib/linux32/
+
+win: win64 win32
 
 win64: pathjulia.c Standalone_Path.c
 	$(CC) $(WIN64_CFLAGS) -o libpath47julia.dll $^ $(PATHLIB)/win64/path47.lib -lm
@@ -56,10 +53,5 @@ test_win64: test_pathjulia.c
 	test_pathjulia_win64.exe
 
 test_win32: test_pathjulia.c
-<<<<<<< HEAD
 	$(CCwin32) -I$(PATHDIR)/include -DFNAME_LCASE_NODECOR -DUSE_OUTPUT_INTERFACE -m32 -o test_pathjulia_win32.exe $^ ../lib/win32/libpath47julia.dll -lm
 	test_pathjulia_win32.exe	
-=======
-	$(CC) -I$(PATHDIR)/include -DFNAME_LCASE_NODECOR -DUSE_OUTPUT_INTERFACE -m32 -o test_pathjulia_win32.exe $^ ../lib/win32/libpath47julia.dll -lm
-	test_pathjulia_win32.exe	
->>>>>>> master
