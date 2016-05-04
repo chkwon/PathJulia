@@ -8,12 +8,15 @@ PATHLIB = $(PATHDIR)/lib
 XLIBS = -lgfortran
 
 CC    = gcc
+# CCwin32 = "C:\Program\ Files (x86)\mingw-w64\i686-5.3.0-posix-dwarf-rt_v4-rev0\mingw32\bin\gcc.exe"
+CCwin32 = gcc32
+
 # OSX_CFLAGS = -I$(PATHDIR)/include -m64 -dynamiclib -shared -fPIC -install_name @rpath/libpath47julia.dylib
 OSX_CFLAGS = -I$(PATHDIR)/include -m64 -dynamiclib -shared -fPIC
 LINUX64_CFLAGS = -I$(PATHDIR)/include -m64 -shared -fPIC -Wl,-soname,libpath47julia.so
 LINUX32_CFLAGS = -I$(PATHDIR)/include -m32 -shared -fPIC -Wl,-soname,libpath47julia.so
 WIN64_CFLAGS = -m64 -DFNAME_LCASE_NODECOR -I$(PATHDIR)/include -DUSE_OUTPUT_INTERFACE -shared 
-WIN32_CFLAGS = -m64 -DFNAME_LCASE_NODECOR -I$(PATHDIR)/include -DUSE_OUTPUT_INTERFACE -shared 
+WIN32_CFLAGS = -m32 -DFNAME_LCASE_NODECOR -I$(PATHDIR)/include -DUSE_OUTPUT_INTERFACE -shared 
 
 osx: pathjulia.c Standalone_Path.c
 	$(CC) $(OSX_CFLAGS) -o libpath47julia.dylib $^ $(PATHLIB)/osx/libpath47.a -lm
@@ -36,7 +39,7 @@ win64: pathjulia.c Standalone_Path.c
 	powershell -Command "Copy-Item -Path libpath47julia.dll -Destination ..\lib\win64 -Force"
 
 win32: pathjulia.c Standalone_Path.c
-	$(CC) $(WIN32_CFLAGS) -o libpath47julia.dll $^ $(PATHLIB)/win32/path47.lib -lm
+	$(CCwin32) $(WIN32_CFLAGS) -o libpath47julia.dll $^ $(PATHLIB)/win32/path47.lib -lm
 	powershell -Command "New-Item -ItemType Directory -Force -Path ..\lib\win32"
 	powershell -Command "Copy-Item -Path libpath47julia.dll -Destination ..\lib\win32 -Force"
 	
@@ -48,5 +51,5 @@ test_win64: test_pathjulia.c
 	test_pathjulia_win64.exe
 	
 test_win32: test_pathjulia.c
-	$(CC) -I$(PATHDIR)/include -DFNAME_LCASE_NODECOR -DUSE_OUTPUT_INTERFACE -m32 -o test_pathjulia_win32.exe $^ ../lib/win64/libpath47julia.dll -lm
+	$(CCwin32) -I$(PATHDIR)/include -DFNAME_LCASE_NODECOR -DUSE_OUTPUT_INTERFACE -m32 -o test_pathjulia_win32.exe $^ ../lib/win32/libpath47julia.dll -lm
 	test_pathjulia_win32.exe	
