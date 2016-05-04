@@ -1,0 +1,6 @@
+*.dll
+*.so
+*.a
+*.lib
+*.exe
+test_pathjulia
