@@ -81,7 +81,6 @@ static int jacobian_evaluation(void *id, int n, double *z, int wantf, double *f,
 static void variable_name(void *id, int variable, char *buffer, int buf_size) {
   strncpy(buffer, problem.var_name[variable-1], buf_size - 1);
   buffer[buf_size-1] = '\0';
-  printf("----------------variable_name %d %s\n", variable, buffer);
   return;
 }
 
@@ -91,19 +90,20 @@ static void constraint_name(void *id, int constr, char *buffer, int buf_size) {
   return;
 }
 
+// static MCP_Interface mcp_interface;
 static MCP_Interface mcp_interface = {
-  NULL,
-  problem_size,
-  bounds,
-  function_evaluation,
-  jacobian_evaluation,
-  NULL, /* hessian evaluation */
-  NULL, /* start */
-  NULL, /* finish */
-  variable_name, /* variable_name */
-  constraint_name, /* constraint_name */
-  NULL  /* basis */
-};
+      NULL,
+      problem_size,
+      bounds,
+      function_evaluation,
+      jacobian_evaluation,
+      NULL, /* hessian evaluation */
+      NULL, /* start */
+      NULL, /* finish */
+      variable_name, /* variable_name */
+      constraint_name, /* constraint_name */
+      NULL  /* basis */
+    };
 
 
 ////////////////////////////////////////////////////////////////////////////
@@ -134,15 +134,14 @@ int path_main( int n, int nnz,
   problem.j_eval = j_eval;
 
   if (var_name == NULL) {
-    printf("var_name is NULL.\n");
     mcp_interface.variable_name = NULL;
   } else {
-    printf("var_name[0] = %s\n", var_name[0]);
-    printf("problem.var_name[0] = %s\n", problem.var_name[0]);
+    mcp_interface.variable_name = variable_name;
   }
   if (con_name == NULL) {
-    printf("con_name is NULL.\n");
     mcp_interface.constraint_name = NULL;
+  } else {
+    mcp_interface.constraint_name = constraint_name;
   }
 
 
@@ -160,10 +159,6 @@ int path_main( int n, int nnz,
   Options_Read(o, "path.opt");
   Options_Display(o);
 
-  if (var_name != NULL) {
-    printf("var_name[0] = %s\n", var_name[0]);
-    printf("problem.var_name[0] = %s\n", problem.var_name[0]);
-  }
 
   // Preprocessing
   if (n == 0) {
@@ -188,10 +183,6 @@ int path_main( int n, int nnz,
   nnz++;
 
 
-  if (var_name != NULL) {
-    printf("var_name[0] = %s\n", var_name[0]);
-    printf("problem.var_name[0] = %s\n", problem.var_name[0]);
-  }
 
 
 
@@ -201,19 +192,12 @@ int path_main( int n, int nnz,
   MCP_SetInterface(m, &mcp_interface);
   Output_SetLog(stdout);
 
-  if (var_name != NULL) {
-    printf("var_name[0] = %s\n", var_name[0]);
-    printf("problem.var_name[0] = %s\n", problem.var_name[0]);
-  }
+
 
 
   // SOLVE
   status = Path_Solve(m, &info);
 
-  if (var_name != NULL) {
-    printf("var_name[0] = %s\n", var_name[0]);
-    printf("problem.var_name[0] = %s\n", problem.var_name[0]);
-  }
 
 
   // Preparing return values
@@ -226,6 +210,7 @@ int path_main( int n, int nnz,
     z[i] = tempZ[i];
     f[i] = tempF[i];
   }
+
 
 
   // destroy

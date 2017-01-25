@@ -199,6 +199,7 @@ ub = 100*ones(n)
 
 var_name = ["x[1]", "x[2]", "x[3]", "x[4]"]
 con_name = ["FF[1]", "FF[2]", "FF[3]", "FF[4]"]
+status, z, f = solveMCP(myfunc, lb, ub)
 status, z, f = solveMCP(myfunc, lb, ub, var_name, con_name)
 
 @show status
