@@ -145,6 +145,9 @@ int path_main( int n, int nnz,
   if (var_name == NULL) {
     printf("var_name is NULL.\n");
     mcp_interface.variable_name = NULL;
+  } else {
+    printf("var_name[0] = %s\n", var_name[0]);
+    printf("problem.var_name[0] = %s\n", problem.var_name[0]);
   }
   if (con_name == NULL) {
     printf("con_name is NULL.\n");
