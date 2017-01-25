@@ -143,9 +143,11 @@ int path_main( int n, int nnz,
   problem.j_eval = j_eval;
 
   if (var_name == NULL) {
+    printf("var_name is NULL.\n");
     mcp_interface.variable_name = NULL;
   }
   if (con_name == NULL) {
+    printf("con_name is NULL.\n");
     mcp_interface.constraint_name = NULL;
   }
 
