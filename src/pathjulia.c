@@ -89,6 +89,7 @@ static int jacobian_evaluation(void *id, int n, double *z, int wantf, double *f,
 static void variable_name(void *id, int variable, char *buffer, int buf_size) {
   strncpy(buffer, problem.var_name[variable-1], buf_size - 1);
   buffer[buf_size-1] = '\0';
+  printf("----------------variable_name %d %s\n", variable, buffer);
   return;
 }
 
