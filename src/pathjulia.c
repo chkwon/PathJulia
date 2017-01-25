@@ -160,9 +160,10 @@ int path_main( int n, int nnz,
   Options_Read(o, "path.opt");
   Options_Display(o);
 
-  printf("var_name[0] = %s\n", var_name[0]);
-  printf("problem.var_name[0] = %s\n", problem.var_name[0]);
-
+  if (var_name != NULL) {
+    printf("var_name[0] = %s\n", var_name[0]);
+    printf("problem.var_name[0] = %s\n", problem.var_name[0]);
+  }
 
   // Preprocessing
   if (n == 0) {
@@ -187,8 +188,10 @@ int path_main( int n, int nnz,
   nnz++;
 
 
-  printf("var_name[0] = %s\n", var_name[0]);
-  printf("problem.var_name[0] = %s\n", problem.var_name[0]);
+  if (var_name != NULL) {
+    printf("var_name[0] = %s\n", var_name[0]);
+    printf("problem.var_name[0] = %s\n", problem.var_name[0]);
+  }
 
 
 
@@ -198,15 +201,19 @@ int path_main( int n, int nnz,
   MCP_SetInterface(m, &mcp_interface);
   Output_SetLog(stdout);
 
-  printf("var_name[0] = %s\n", var_name[0]);
-  printf("problem.var_name[0] = %s\n", problem.var_name[0]);
+  if (var_name != NULL) {
+    printf("var_name[0] = %s\n", var_name[0]);
+    printf("problem.var_name[0] = %s\n", problem.var_name[0]);
+  }
 
 
   // SOLVE
   status = Path_Solve(m, &info);
 
-  printf("var_name[0] = %s\n", var_name[0]);
-  printf("problem.var_name[0] = %s\n", problem.var_name[0]);
+  if (var_name != NULL) {
+    printf("var_name[0] = %s\n", var_name[0]);
+    printf("problem.var_name[0] = %s\n", problem.var_name[0]);
+  }
 
 
   // Preparing return values
