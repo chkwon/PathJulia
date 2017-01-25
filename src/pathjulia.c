@@ -125,8 +125,10 @@ int path_main( int n, int nnz,
                 void *f_eval, void *j_eval) {
 
 
-
+  // solve status: return value
   int status;
+
+  printf("Hello Wolrd!\n");
 
   // creating a Problem instance
   problem.n = n;
