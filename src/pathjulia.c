@@ -1,132 +1,219 @@
-// This file is a modification of "obstacle.c" in
-// https://github.com/ampl/pathlib/blob/master/examples/C/obstacle.c
-// This modification enables a user provide function pointers to
-// both funcEval and jacEval.
-// The main purpose is to provide those function from Julia.
-// See https://github.com/chkwon/PATHSolver.jl
-// Changhyun Kwon https://github.com/chkwon/
-
-
-
+#include <limits.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <math.h>
-#include "Standalone_Path.h"
-#include "Types.h"
-#include "pathjulia.h"
+#include <string.h>
 
-static int fill_structure;      /* Do we need to fill in the structure of    */
-                                /* the Jacobian?                             */
+#include "MCP_Interface.h"
 
-static int (*f_eval)(int n, double *z, double *f);
-static int (*j_eval)(int n, int nnz, double *z, int *col_start, int *col_len,
-            int *row, double *data);
+#include "Path.h"
+#include "PathOptions.h"
 
-int funcEval(int n, double *z, double *f)
-{
-  f_eval(n, z, f);
-  return 0;
+#include "Macros.h"
+#include "Output_Interface.h"
+#include "Options.h"
+
+
+
+typedef struct {
+  int n;
+  int nnz;
+
+  double *z;
+  double *f;
+
+  double *lb;
+  double *ub;
+
+  char **var_name;
+  char **con_name;
+
+  int (*f_eval)(int n, double *z, double *f);
+  int (*j_eval)(int n, int nnz, double *z, int *col_start, int *col_len,
+              int *row, double *data);
+} Problem;
+
+static Problem problem;
+
+
+
+
+
+
+
+
+
+// static int (*f_eval)(int n, double *z, double *f);
+// static int (*j_eval)(int n, int nnz, double *z, int *col_start, int *col_len,
+//             int *row, double *data);
+
+
+
+
+
+static void problem_size(void *id, int *n, int *nnz) {
+  *n = problem.n;
+  *nnz = problem.nnz;
+  return;
 }
 
-int jacEval(int n, int nnz, double *z, int *col_start, int *col_len,
-            int *row, double *data)
-{
-  j_eval(n, nnz, z, col_start, col_len, row, data);
-  return 0;
-} /* jacEval */
-
-#define MIN(A,B) ((A) < (B)) ? (A) : (B)
-
-double resid (int n, const double z[], const double f[],
-              const double lb[], const double ub[])
-{
-  double loTmp, upTmp, t, r;
-  int i;
-
-  r = 0;
-  for (i = 0;  i < n;  i++) {
-    assert(z[i] >= lb[i]);
-    assert(z[i] <= ub[i]);
-    if (f[i] > 0) {
-      t = MIN(f[i],z[i]-lb[i]);
-      r += t;
-    }
-    else {
-      t = MIN(-f[i], ub[i]-z[i]);
-      r += t;
-    }
+static void bounds(void *id, int n, double *z, double *lb, double *ub) {
+  for (int i = 0; i < n; i++) {
+    z[i] = problem.z[i];
+    lb[i] = problem.lb[i];
+    ub[i] = problem.ub[i];
   }
-  return r;
-} /* resid */
+  return;
+}
 
-int path_solver (int n, int nnz,
-                 double *z, double *f,
-                 double *lb, double *ub,
-                 void *f_eval_user, void *j_eval_user)
-{
-  f_eval = f_eval_user;
-  j_eval = j_eval_user;
+static int function_evaluation(void *id, int n, double *z, double *f) {
+  int err;
+  err = problem.f_eval(n, z, f);
+  return err;
+}
 
-  int i;
+static int jacobian_evaluation(void *id, int n, double *z, int wantf, double *f, int *nnz, int *col_start, int *col_len, int *row, double *data) {
+  int i, err = 0;
 
-  // double *lb;          /* Lower bounds on the variables             */
-  // double *ub;          /* Upper bounds on the variables             */
-  // double *z;           /* Solution vector                           */
-  // double *f;           /* Function evaluation                       */
-  double r;
-
-  // int n;               /* Number of variable (N*N)                  */
-  // int nnz;             /* Number of nonzeros (5*N*N - 4*N)          */
-  int status;          /* Termination status from PATH              */
-
-  /************************************************************************/
-  /* Allocate space for the bounds, starting point, and function value.   */
-  /************************************************************************/
-
-  // lb = (double *)malloc(sizeof(double)*n);
-  // ub = (double *)malloc(sizeof(double)*n);
-  // z = (double *)malloc(sizeof(double)*n);
-  // f = (double *)malloc(sizeof(double)*n);
-
-  /************************************************************************/
-  /* Fill in the lower and upper bounds and a starting point.             */
-  /************************************************************************/
-
-  // for (i = 0; i < n; i++) {
-  //     lb[i] = 0.0;
-  //     ub[i] = 100.0;
-  //     z[i] = 1.0;
-  // }
-
-  /************************************************************************/
-  /* Call PATH.                                                           */
-  /************************************************************************/
-
-  pathMain (n, nnz, &status, z, f, lb, ub);
-
-  if (MCP_Solved != status)
-    return EXIT_FAILURE;
-  (void) funcEval (n, z, f);
-  r = resid (n, z, f, lb, ub);
-  if (r > 1e-6) {
-    printf ("Residual of %g is too large: failure\n", r);
-    return EXIT_FAILURE;
+  if (wantf) {
+    err += function_evaluation(id, n, z, f);
   }
-  else
-    printf ("Residual of %g is OK\n", r);
 
-  /************************************************************************/
-  /* Deallocate memory.                                                   */
-  /************************************************************************/
-  // for (i=0; i<n; i++) {
-  //     printf("z[%d] = %f\n", i, z[i]);
-  // }
+  err += problem.j_eval(n, *nnz, z, col_start, col_len, row, data);
 
-  // free(lb);
-  // free(ub);
-  // free(z);
-  // free(f);
+  (*nnz) = 0;
+  for (i = 0; i < n; i++) {
+    (*nnz) += col_len[i];
+  }
+  return err;
+}
+
+static void variable_name(void *id, int variable, char *buffer, int buf_size) {
+  strncpy(buffer, problem.var_name[variable-1], buf_size - 1);
+  buffer[buf_size-1] = '\0';
+  return;
+}
+
+static void constraint_name(void *id, int constr, char *buffer, int buf_size) {
+  strncpy(buffer, problem.con_name[constr-1], buf_size - 1);
+  buffer[buf_size-1] = '\0';
+  return;
+}
+
+static MCP_Interface mcp_interface = {
+  NULL,
+  problem_size,
+  bounds,
+  function_evaluation,
+  jacobian_evaluation,
+  NULL, /* hessian evaluation */
+  NULL, /* start */
+  NULL, /* finish */
+  variable_name, /* variable_name */
+  constraint_name, /* constraint_name */
+  NULL  /* basis */
+};
+
+
+
+
+////////////////////////////////////////////////////////////////////////////
+// Main Function to be called from Julia
+////////////////////////////////////////////////////////////////////////////
+
+int path_main( int n, int nnz,
+                double *z, double *f, double *lb, double *ub,
+                char **var_name, char **con_name,
+                void *f_eval, void *j_eval) {
+
+
+
+  int status;
+
+  // creating a Problem instance
+  problem.n = n;
+  problem.nnz = nnz;
+  problem.z = z;
+  problem.f = f;
+  problem.lb = lb;
+  problem.ub = ub;
+  problem.var_name = var_name;
+  problem.con_name = con_name;
+  problem.f_eval = f_eval;
+  problem.j_eval = j_eval;
+
+  if (var_name == NULL) {
+    mcp_interface.variable_name = NULL;
+  }
+  if (con_name == NULL) {
+    mcp_interface.constraint_name = NULL;
+  }
+
+
+  // Information instance
+  Information info;
+  info.generate_output = Output_Log | Output_Status | Output_Listing;
+  info.use_start = True;
+  info.use_basics = True;
+
+  // Options Interface
+  Options_Interface *o;
+  o = Options_Create();
+  Path_AddOptions(o);
+  Options_Default(o);
+  Options_Read(o, "path.opt");
+  Options_Display(o);
+
+  // Preprocessing
+  if (n == 0) {
+    fprintf(stdout, "\n ** EXIT - solution found (degenerate model).\n");
+    (status) = MCP_Solved;
+    Options_Destroy(o);
+    return status;
+  }
+
+  double dnnz;
+  dnnz = MIN(1.0*nnz, 1.0*n*n);
+  if (dnnz > INT_MAX) {
+    fprintf(stdout, "\n ** EXIT - model too large.\n");
+    (status) = MCP_Error;
+    Options_Destroy(o);
+    return status;
+  }
+  nnz = (int) dnnz;
+
+  fprintf(stdout, "%d row/cols, %d non-zeros, %3.2f%% dense.\n\n",
+          n, nnz, 100.0*nnz/(1.0*n*n));
+  nnz++;
+
+
+
+
+
+  // preparing an MCP instance and interfaces
+  MCP *m;
+  m = MCP_Create(n, nnz);
+  MCP_SetInterface(m, &mcp_interface);
+  Output_SetLog(stdout);
+
+  // SOLVE
+  status = Path_Solve(m, &info);
+
+  // Preparing return values
+  double *tempZ;
+  double *tempF;
+  tempZ = MCP_GetX(m);
+  tempF = MCP_GetF(m);
+
+  for (int i = 0; i < n; i++) {
+    z[i] = tempZ[i];
+    f[i] = tempF[i];
+  }
+
+
+  // destroy
+  MCP_Destroy(m);
+  Options_Destroy(o);
+
 
   return status;
-} /* main */
+
+}
