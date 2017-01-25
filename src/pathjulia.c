@@ -1,6 +1,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "MCP_Interface.h"
 
@@ -35,15 +36,6 @@ static Problem problem;
 
 
 
-
-
-
-
-
-
-// static int (*f_eval)(int n, double *z, double *f);
-// static int (*j_eval)(int n, int nnz, double *z, int *col_start, int *col_len,
-//             int *row, double *data);
 
 
 
@@ -114,8 +106,6 @@ static MCP_Interface mcp_interface = {
 };
 
 
-
-
 ////////////////////////////////////////////////////////////////////////////
 // Main Function to be called from Julia
 ////////////////////////////////////////////////////////////////////////////
@@ -170,6 +160,10 @@ int path_main( int n, int nnz,
   Options_Read(o, "path.opt");
   Options_Display(o);
 
+  printf("var_name[0] = %s\n", var_name[0]);
+  printf("problem.var_name[0] = %s\n", problem.var_name[0]);
+
+
   // Preprocessing
   if (n == 0) {
     fprintf(stdout, "\n ** EXIT - solution found (degenerate model).\n");
@@ -193,6 +187,8 @@ int path_main( int n, int nnz,
   nnz++;
 
 
+  printf("var_name[0] = %s\n", var_name[0]);
+  printf("problem.var_name[0] = %s\n", problem.var_name[0]);
 
 
 
@@ -202,8 +198,16 @@ int path_main( int n, int nnz,
   MCP_SetInterface(m, &mcp_interface);
   Output_SetLog(stdout);
 
+  printf("var_name[0] = %s\n", var_name[0]);
+  printf("problem.var_name[0] = %s\n", problem.var_name[0]);
+
+
   // SOLVE
   status = Path_Solve(m, &info);
+
+  printf("var_name[0] = %s\n", var_name[0]);
+  printf("problem.var_name[0] = %s\n", problem.var_name[0]);
+
 
   // Preparing return values
   double *tempZ;
@@ -220,7 +224,6 @@ int path_main( int n, int nnz,
   // destroy
   MCP_Destroy(m);
   Options_Destroy(o);
-
 
   return status;
 
