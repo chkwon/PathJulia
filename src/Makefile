@@ -25,13 +25,13 @@ osx: pathjulia.c
 linux64: pathjulia.c
 	$(CC) $(LINUX64_CFLAGS) -o libpath47julia.so $^ $(PATHLIB)/linux64/libpath47.a -lm
 	mkdir -p ../lib/linux64
-	mv libpath47julia.so ../lib/linux64/
+	cp libpath47julia.so ../lib/linux64/
 	julia test.jl
 
 linux32: pathjulia.c
 	$(CC) $(LINUX32_CFLAGS) -o libpath47julia.so $^ $(PATHLIB)/linux32/libpath47.a -lm
 	mkdir -p ../lib/linux32
-	mv libpath47julia.so ../lib/linux32/
+	cp libpath47julia.so ../lib/linux32/
 	julia test.jl
 
 win: win64 win32
