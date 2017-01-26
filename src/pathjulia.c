@@ -119,8 +119,6 @@ int path_main( int n, int nnz,
   // solve status: return value
   int status;
 
-  printf("Hello Wolrd!\n");
-
   // creating a Problem instance
   problem.n = n;
   problem.nnz = nnz;
