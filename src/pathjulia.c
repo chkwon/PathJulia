@@ -41,14 +41,15 @@ static Problem problem;
 
 
 
-static void problem_size(void *id, int *n, int *nnz) {
+static CB_FUNC(void) problem_size(void *id, int *n, int *nnz) {
   *n = problem.n;
   *nnz = problem.nnz;
   return;
 }
 
-static void bounds(void *id, int n, double *z, double *lb, double *ub) {
-  for (int i = 0; i < n; i++) {
+static CB_FUNC(void) bounds(void *id, int n, double *z, double *lb, double *ub) {
+  int i;
+  for (i = 0; i < n; i++) {
     z[i] = problem.z[i];
     lb[i] = problem.lb[i];
     ub[i] = problem.ub[i];
@@ -56,13 +57,13 @@ static void bounds(void *id, int n, double *z, double *lb, double *ub) {
   return;
 }
 
-static int function_evaluation(void *id, int n, double *z, double *f) {
+static CB_FUNC(int) function_evaluation(void *id, int n, double *z, double *f) {
   int err;
   err = problem.f_eval(n, z, f);
   return err;
 }
 
-static int jacobian_evaluation(void *id, int n, double *z, int wantf, double *f, int *nnz, int *col_start, int *col_len, int *row, double *data) {
+static CB_FUNC(int) jacobian_evaluation(void *id, int n, double *z, int wantf, double *f, int *nnz, int *col_start, int *col_len, int *row, double *data) {
   int i, err = 0;
 
   if (wantf) {
@@ -78,13 +79,13 @@ static int jacobian_evaluation(void *id, int n, double *z, int wantf, double *f,
   return err;
 }
 
-static void variable_name(void *id, int variable, char *buffer, int buf_size) {
+static CB_FUNC(void) variable_name(void *id, int variable, char *buffer, int buf_size) {
   strncpy(buffer, problem.var_name[variable-1], buf_size - 1);
   buffer[buf_size-1] = '\0';
   return;
 }
 
-static void constraint_name(void *id, int constr, char *buffer, int buf_size) {
+static CB_FUNC(void) constraint_name(void *id, int constr, char *buffer, int buf_size) {
   strncpy(buffer, problem.con_name[constr-1], buf_size - 1);
   buffer[buf_size-1] = '\0';
   return;
@@ -106,6 +107,16 @@ static MCP_Interface mcp_interface = {
     };
 
 
+/* callback to register with PATH: output from PATH will go here */
+static CB_FUNC(void) messageCB (void *data, int mode, char *buf) {
+  fprintf (stdout, "%s", buf);
+} /* messageCB */
+static Output_Interface outputInterface = {
+  NULL,
+  messageCB,
+  NULL
+};
+
 ////////////////////////////////////////////////////////////////////////////
 // Main Function to be called from Julia
 ////////////////////////////////////////////////////////////////////////////
@@ -118,8 +129,6 @@ int path_main( int n, int nnz,
 
   // solve status: return value
   int status;
-
-  printf("Hello Wolrd!\n");
 
   // creating a Problem instance
   problem.n = n;
@@ -138,12 +147,24 @@ int path_main( int n, int nnz,
   } else {
     mcp_interface.variable_name = variable_name;
   }
+
   if (con_name == NULL) {
     mcp_interface.constraint_name = NULL;
   } else {
     mcp_interface.constraint_name = constraint_name;
   }
 
+
+
+
+  // Output Interface
+  #if defined(USE_OUTPUT_INTERFACE)
+    Output_SetInterface(&outputInterface);
+  #else
+    /* N.B.: the Output_SetLog call does not work when using a DLL:
+     * the IO systems of a .exe and .dll do not automatically interoperate */
+    Output_SetLog(stdout);
+  #endif
 
   // Information instance
   Information info;
@@ -158,7 +179,6 @@ int path_main( int n, int nnz,
   Options_Default(o);
   Options_Read(o, "path.opt");
   Options_Display(o);
-
 
   // Preprocessing
   if (n == 0) {
@@ -185,7 +205,6 @@ int path_main( int n, int nnz,
 
 
 
-
   // preparing an MCP instance and interfaces
   MCP *m;
   m = MCP_Create(n, nnz);
@@ -199,14 +218,14 @@ int path_main( int n, int nnz,
   status = Path_Solve(m, &info);
 
 
-
   // Preparing return values
   double *tempZ;
   double *tempF;
   tempZ = MCP_GetX(m);
   tempF = MCP_GetF(m);
 
-  for (int i = 0; i < n; i++) {
+  int i;
+  for (i = 0; i < n; i++) {
     z[i] = tempZ[i];
     f[i] = tempF[i];
   }

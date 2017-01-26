@@ -8,7 +8,8 @@ PATHLIB = $(PATHDIR)/lib
 XLIBS = -lgfortran
 
 CC    = gcc
-CCwin32 = gcc32
+CCwin32 = i686-w64-mingw32-gcc
+JULIA32 = C:/julia32/bin/julia
 
 OSX_CFLAGS = -I$(PATHDIR)/include -m64 -dynamiclib -shared -fPIC
 LINUX64_CFLAGS = -I$(PATHDIR)/include -m64 -shared -fPIC -Wl,-soname,libpath47julia.so
@@ -40,10 +41,25 @@ win64: pathjulia.c
 	$(CC) $(WIN64_CFLAGS) -o libpath47julia.dll $^ $(PATHLIB)/win64/path47.lib -lm
 	powershell -Command "New-Item -ItemType Directory -Force -Path ..\lib\win64"
 	powershell -Command "Copy-Item -Path libpath47julia.dll -Destination ..\lib\win64 -Force"
+	powershell -Command "Copy-Item -Path $(PATHLIB)/win64/path47.dll -Destination . -Force"
 	julia test.jl
 
 win32: pathjulia.c
 	$(CCwin32) $(WIN32_CFLAGS) -o libpath47julia.dll $^ $(PATHLIB)/win32/path47.lib -lm
 	powershell -Command "New-Item -ItemType Directory -Force -Path ..\lib\win32"
 	powershell -Command "Copy-Item -Path libpath47julia.dll -Destination ..\lib\win32 -Force"
-	julia test.jl
+	powershell -Command "Copy-Item -Path $(PATHLIB)/win32/path47.dll -Destination . -Force"
+	$(JULIA32) test.jl
+
+
+
+test: test_pathjulia.c
+	$(CC) -I$(PATHDIR)/include -Wl,-rpath,../lib/linux64/ -m64 -o test_pathjulia $^ -L../lib/linux64/ -lpath47julia -lm
+
+test_win64: test_pathjulia.c
+	$(CC) -I$(PATHDIR)/include -DFNAME_LCASE_NODECOR -DUSE_OUTPUT_INTERFACE -m64 -o test_pathjulia_win64.exe $^ ../lib/win64/libpath47julia.dll -lm
+	test_pathjulia_win64.exe
+
+test_win32: test_pathjulia.c
+	$(CCwin32) -I$(PATHDIR)/include -DFNAME_LCASE_NODECOR -DUSE_OUTPUT_INTERFACE -m32 -o test_pathjulia_win32.exe $^ ../lib/win32/libpath47julia.dll -lm
+	test_pathjulia_win32.exe
