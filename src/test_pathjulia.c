@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
-#include "Standalone_Path.h"
 #include "Types.h"
 #include "pathjulia.h"
 
@@ -349,11 +348,11 @@ int main (int argc, char **argv)
   /************************************************************************/
   /* Call PATH.                                                           */
   /************************************************************************/
-
-  status = path_solver ( n,  nnz,
-                    z,  f,
-                    lb,  ub,
-                    &funcEval,  &jacEval);
+status = path_main(  n,  nnz,
+                      z,  f,
+                      lb,  ub,
+                      NULL, NULL,
+                      &funcEval,  &jacEval);
 
   if (MCP_Solved != status)
     return EXIT_FAILURE;
