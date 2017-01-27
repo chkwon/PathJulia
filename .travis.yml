@@ -13,6 +13,7 @@ addons:
         - gfortran
 script:
     - cd src
+    - julia -e 'Pkg.add("ForwardDiff")'
     - make linux64
 after_success:
     - echo $TRAVIS_JULIA_VERSION
