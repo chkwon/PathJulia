@@ -14,7 +14,7 @@ addons:
 script:
     - cd src
     - julia -e 'Pkg.add("ForwardDiff")'
-    - if [[ "$TRAVIS_OS_NAME" == "osx" ]];    make osx        ; fi
-    - if [[ "$TRAVIS_OS_NAME" == "linux" ]];  make linux64    ; fi
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]];    then make osx        ; fi
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]];  then make linux64    ; fi
 after_success:
     - echo $TRAVIS_JULIA_VERSION
