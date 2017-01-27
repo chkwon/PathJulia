@@ -2,7 +2,9 @@
 
 #.PHONY: all test
 
-PATHDIR = ../../pathlib
+PATHLIB_V = 4.7.03
+PATHLIB_ZIP = https://github.com/ampl/pathlib/archive/$(PATHLIB_V).zip
+PATHDIR = ./pathlib-$(PATHLIB_V)
 PATHLIB = $(PATHDIR)/lib
 
 XLIBS = -lgfortran
@@ -18,6 +20,12 @@ WIN64_CFLAGS = -m64 -DFNAME_LCASE_NODECOR -I$(PATHDIR)/include -DUSE_OUTPUT_INTE
 WIN32_CFLAGS = -m32 -DFNAME_LCASE_NODECOR -I$(PATHDIR)/include -DUSE_OUTPUT_INTERFACE -shared
 
 osx: pathjulia.c
+	if [ ! -d pathlib-$(PATHLIB_V) ]; \
+	then \
+		wget $(PATHLIB_ZIP); \
+		unzip -o $(PATHLIB_V).zip; \
+		rm -rf $(PATHLIB_V).zip*; \
+	fi;
 	$(CC) $(OSX_CFLAGS) -o libpath47julia.dylib $^ $(PATHLIB)/osx/libpath47.a -lm
 	mkdir -p ../lib/osx/
 	cp libpath47julia.dylib ../lib/osx/
