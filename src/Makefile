@@ -40,9 +40,9 @@ linux64: pathjulia.c
 		rm -rf $(PATHLIB_V).tar.gz*; \
 	fi;
 	$(CC) $(LINUX64_CFLAGS) -o libpath47julia.so $^ $(PATHLIB)/linux64/libpath47.a -lm
-	mkdir -p ../lib/linux64
-	cp libpath47julia.so ../lib/linux64/
-	julia test.jl
+	# mkdir -p ../lib/linux64
+	# cp libpath47julia.so ../lib/linux64/
+	# julia test.jl
 
 linux32: pathjulia.c
 	if [ ! -d pathlib-$(PATHLIB_V) ]; \
