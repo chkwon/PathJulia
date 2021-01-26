@@ -1,3 +1,5 @@
+Now the all-new [PATHSolver.jl](https://github.com/chkwon/PATHSolver.jl) can access PATH directly. 
+
 # PathJulia
 
 [![Build Status](https://travis-ci.org/chkwon/PathJulia.svg?branch=master)](https://travis-ci.org/chkwon/PathJulia)
